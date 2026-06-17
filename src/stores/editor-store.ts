@@ -10,6 +10,8 @@ import type {
   HistoryEntry,
   DataSource,
   TemplateItem,
+  AITemplate,
+  TopNavType,
 } from '@/types/editor';
 import { TEMPLATES } from '@/lib/templates';
 
@@ -47,6 +49,11 @@ interface EditorState {
   // Templates
   templates: TemplateItem[];
 
+  // AI Templates
+  aiTemplates: AITemplate[];
+  topNavActive: TopNavType;
+  topNavDropdownOpen: boolean;
+
   // Actions
   addComponent: (type: ComponentType, position?: { x: number; y: number }, name?: string, size?: { width: number; height: number }) => string;
   removeComponent: (id: string) => void;
@@ -78,6 +85,14 @@ interface EditorState {
   pushHistory: (action: string) => void;
 
   addDataSource: (ds: DataSource) => void;
+
+  // AI Template actions
+  addAITemplate: (template: Omit<AITemplate, 'createdAt' | 'updatedAt'>) => void;
+  updateAITemplate: (id: string, updates: Partial<Omit<AITemplate, 'id' | 'createdAt'>>) => void;
+  deleteAITemplate: (id: string) => void;
+  setTopNav: (nav: TopNavType) => void;
+  toggleTopNavDropdown: () => void;
+  closeTopNavDropdown: () => void;
 }
 
 const COMPONENT_DEFAULTS: Record<ComponentType, { name: string; width: number; height: number; category: string }> = {
@@ -142,6 +157,42 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   // Templates
   templates: [],
+
+  // AI Templates
+  aiTemplates: [
+    {
+      id: 'ai-tpl-001',
+      name: '电网能耗数据总览大屏',
+      coverImage: '',
+      templateFile: null,
+      templateFileName: null,
+      summary: '电力行业 · 深色科技风 · 包含全网总能耗、用电量、节能完成率等核心指标',
+      createdAt: Date.now() - 86400000 * 7,
+      updatedAt: Date.now() - 86400000 * 2,
+    },
+    {
+      id: 'ai-tpl-002',
+      name: '智慧城市数据总览大屏',
+      coverImage: '',
+      templateFile: null,
+      templateFileName: null,
+      summary: '智慧城市 · 政企庄重 · 包含城市全域地图、GDP总量、交通指数、环境质量等核心指标',
+      createdAt: Date.now() - 86400000 * 14,
+      updatedAt: Date.now() - 86400000 * 5,
+    },
+    {
+      id: 'ai-tpl-003',
+      name: '安防监控指挥大屏',
+      coverImage: '',
+      templateFile: null,
+      templateFileName: null,
+      summary: '安防 · 暗黑科技 · 包含告警总数、安防态势地图、事件类型分布等核心模块',
+      createdAt: Date.now() - 86400000 * 30,
+      updatedAt: Date.now() - 86400000 * 10,
+    },
+  ],
+  topNavActive: 'components',
+  topNavDropdownOpen: false,
 
   // Actions
   addComponent: (type, position, name, size) => {
@@ -331,4 +382,42 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   addDataSource: (ds) => {
     set((state) => ({ dataSources: [...state.dataSources, ds] }));
   },
+
+  // AI Template actions
+  addAITemplate: (template) => {
+    const now = Date.now();
+    const newTemplate: AITemplate = {
+      ...template,
+      createdAt: now,
+      updatedAt: now,
+    };
+    set((state) => ({
+      aiTemplates: [...state.aiTemplates, newTemplate],
+    }));
+  },
+
+  updateAITemplate: (id, updates) => {
+    set((state) => ({
+      aiTemplates: state.aiTemplates.map((t) =>
+        t.id === id ? { ...t, ...updates, updatedAt: Date.now() } : t
+      ),
+    }));
+  },
+
+  deleteAITemplate: (id) => {
+    set((state) => ({
+      aiTemplates: state.aiTemplates.filter((t) => t.id !== id),
+    }));
+  },
+
+  setTopNav: (nav) =>
+    set((state) => ({
+      topNavActive: nav,
+      topNavDropdownOpen: state.topNavActive === nav ? !state.topNavDropdownOpen : true,
+    })),
+
+  toggleTopNavDropdown: () =>
+    set((state) => ({ topNavDropdownOpen: !state.topNavDropdownOpen })),
+
+  closeTopNavDropdown: () => set({ topNavDropdownOpen: false }),
 }));

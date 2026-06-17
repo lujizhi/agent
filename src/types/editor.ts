@@ -60,7 +60,8 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-export type LeftPanelType = 'components' | 'datasource' | 'templates' | 'assets' | 'layers' | 'outline';
+export type LeftPanelType = 'components' | 'datasource' | 'templates' | 'assets' | 'layers' | 'outline' | 'ai-templates';
+export type TopNavType = LeftPanelType;
 export type RightPanelType = 'properties' | 'ai-chat' | 'animation';
 export type EditorMode = 'edit' | 'preview' | 'presentation';
 
@@ -101,4 +102,15 @@ export interface HistoryEntry {
   action: string;
   timestamp: number;
   snapshot: CanvasComponent[];
+}
+
+export interface AITemplate {
+  id: string;
+  name: string;
+  coverImage: string;
+  templateFile: string | null;
+  templateFileName: string | null;
+  summary: string;
+  createdAt: number;
+  updatedAt: number;
 }
