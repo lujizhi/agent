@@ -18,6 +18,7 @@ import {
   getTemplateById,
   type RecommendTemplatesInstruction,
 } from '@/lib/dsl-executor';
+import { AgentChatPanel } from './AgentChatPanel';
 
 /** Interactive demo steps — matches the new document's power scenario */
 const DEMO_STEPS = [
@@ -496,7 +497,7 @@ function RichAssistantMessage({ content, onApplyTemplate, appliedTemplateIds }: 
   );
 }
 
-function AIChatPanel() {
+export function AIChatPanel() {
   const store = useEditorStore();
   const { chatMessages, addChatMessage, setChatLoading, chatLoading, selectedComponentContext, components } = store;
   const [input, setInput] = useState('');
@@ -826,7 +827,7 @@ export function RightSidebar() {
 
           {/* Panel content */}
           <div className="flex-1 overflow-hidden">
-            {rightPanel === 'ai-chat' && <AIChatPanel />}
+            {rightPanel === 'ai-chat' && <AgentChatPanel />}
             {rightPanel === 'properties' && <PropertyPanel />}
           </div>
         </div>
