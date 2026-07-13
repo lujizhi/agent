@@ -68,7 +68,7 @@ export function ImageUploadArea() {
   }, [setImageUpload, setImageMode, setImageWorkflowStep]);
 
   const handleAnalyze = useCallback(async () => {
-    if (!imageUpload.file || isAnalyzing) return;
+    if (!imageUpload?.file || isAnalyzing) return;
 
     setIsAnalyzing(true);
     setImageUpload({ analyzing: true });
@@ -76,7 +76,7 @@ export function ImageUploadArea() {
 
     try {
       const formData = new FormData();
-      formData.append('file', imageUpload.file);
+      formData.append('file', imageUpload!.file!);
       formData.append('supplementaryText', store.imageSupplementaryText);
 
       const res = await fetch('/api/image-analyze', {
@@ -145,16 +145,16 @@ ${JSON.stringify(data.semantic?.json || {})}
       setIsAnalyzing(false);
       setImageUpload({ analyzing: false });
     }
-  }, [imageUpload.file, isAnalyzing, setImageUpload, setImageWorkflowStep, store]);
+  }, [imageUpload?.file, isAnalyzing, setImageUpload, setImageWorkflowStep, store]);
 
   const handleClear = useCallback(() => {
-    if (imageUpload.previewUrl) {
+    if (imageUpload?.previewUrl) {
       URL.revokeObjectURL(imageUpload.previewUrl);
     }
     store.resetImageUpload();
     setImageWorkflowStep('idle');
     setImageMode('text');
-  }, [imageUpload.previewUrl, store]);
+  }, [imageUpload?.previewUrl, store]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -171,13 +171,14 @@ ${JSON.stringify(data.semantic?.json || {})}
   const handleDragLeave = useCallback(() => setDragOver(false), []);
 
   // 如果已上传图片，显示预览
-  if (imageUpload.uploaded && imageUpload.previewUrl) {
+  if (imageUpload?.uploaded && imageUpload?.previewUrl) {
+    const upload = imageUpload;
     return (
       <div className="border border-cyan-500/30 rounded-lg overflow-hidden bg-[#0a0e1a]">
         {/* 图片预览 */}
         <div className="relative h-36 bg-black/40 flex items-center justify-center overflow-hidden">
           <img
-            src={imageUpload.previewUrl}
+            src={upload.previewUrl}
             alt="上传参考图"
             className="max-h-full max-w-full object-contain"
           />
@@ -185,10 +186,10 @@ ${JSON.stringify(data.semantic?.json || {})}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-slate-300 truncate max-w-[180px]">
-                {imageUpload.fileName}
+                {upload.fileName}
               </span>
               <span className="text-[9px] text-slate-500">
-                {(imageUpload.fileSize / 1024).toFixed(0)}KB
+                {((upload.fileSize ?? 0) / 1024).toFixed(0)}KB
               </span>
             </div>
           </div>
@@ -205,7 +206,7 @@ ${JSON.stringify(data.semantic?.json || {})}
 
         {/* 操作按钮 */}
         <div className="p-2.5 flex items-center gap-2">
-          {isAnalyzing || imageUpload.analyzing ? (
+          {isAnalyzing || upload.analyzing ? (
             <div className="flex-1 flex items-center justify-center gap-2 py-1.5 text-xs text-cyan-400">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               正在分析图片...
@@ -278,7 +279,7 @@ ${JSON.stringify(data.semantic?.json || {})}
         </div>
       </div>
 
-      {imageUpload.error && (
+      {imageUpload?.error && (
         <p className="text-[10px] text-red-400 mt-2">{imageUpload.error}</p>
       )}
     </div>

@@ -12,6 +12,11 @@ import type {
   TemplateItem,
   AITemplate,
   TopNavType,
+  AssetScheme,
+  AssetLayer,
+  SemanticAnalysisResult,
+  VectorRetrievalResult,
+  ImageWorkflowStep,
 } from '@/types/editor';
 import { TEMPLATES } from '@/lib/templates';
 
@@ -54,6 +59,24 @@ interface EditorState {
   topNavActive: TopNavType;
   topNavDropdownOpen: boolean;
 
+  // Image Workflow (图生大屏)
+  imageUpload: { file?: File; previewUrl?: string; error?: string | null; fileName?: string; fileSize?: number; uploaded?: boolean; analyzing?: boolean } | null;
+  imageMode: string;
+  imageWorkflowStep: ImageWorkflowStep;
+  imageSupplementaryText: string;
+  imageAnalysis: import('@/types/editor').ImageAnalysisResult | null;
+  imageSemantic: SemanticAnalysisResult | null;
+  imageRetrieval: VectorRetrievalResult | null;
+  imageBranch: string;
+  imageSelectedTemplateId: string;
+
+  // Asset Workflow (组件素材生成)
+  assetSchemes: AssetScheme[];
+  assetSelectedSchemes: number[];
+  assetLayers: AssetLayer[];
+  assetWorkflowStep: string;
+  previewComponents: CanvasComponent[];
+
   // Actions
   addComponent: (type: ComponentType, position?: { x: number; y: number }, name?: string, size?: { width: number; height: number }) => string;
   removeComponent: (id: string) => void;
@@ -93,6 +116,29 @@ interface EditorState {
   setTopNav: (nav: TopNavType) => void;
   toggleTopNavDropdown: () => void;
   closeTopNavDropdown: () => void;
+
+  // Image Workflow actions
+  setImageUpload: (data: Partial<{ file: File; previewUrl: string; error: string | null; fileName: string; fileSize: number; uploaded: boolean; analyzing: boolean }> | null) => void;
+  setImageMode: (mode: string) => void;
+  setImageWorkflowStep: (step: ImageWorkflowStep) => void;
+  setImageSupplementaryText: (text: string) => void;
+  setImageAnalysis: (analysis: import('@/types/editor').ImageAnalysisResult | null) => void;
+  setImageSemantic: (semantic: SemanticAnalysisResult | null) => void;
+  setImageRetrieval: (retrieval: VectorRetrievalResult | null) => void;
+  setImageBranch: (branch: string) => void;
+  setImageSelectedTemplateId: (id: string) => void;
+  resetImageUpload: () => void;
+  resetImageWorkflow: () => void;
+
+  // Asset Workflow actions
+  setAssetSchemes: (schemes: AssetScheme[]) => void;
+  setAssetSelectedSchemes: (indices: number[]) => void;
+  addAssetLayer: (layer: AssetLayer) => void;
+  clearAssetLayers: () => void;
+  setAssetWorkflowStep: (step: string) => void;
+  resetAssetWorkflow: () => void;
+  setPreviewComponents: (components: CanvasComponent[]) => void;
+  clearPreviewComponents: () => void;
 }
 
 const COMPONENT_DEFAULTS: Record<ComponentType, { name: string; width: number; height: number; category: string }> = {
@@ -111,6 +157,7 @@ const COMPONENT_DEFAULTS: Record<ComponentType, { name: string; width: number; h
   number_flip: { name: '数字翻牌器', width: 200, height: 100, category: 'text' },
   kpi_card: { name: 'KPI卡片', width: 240, height: 140, category: 'business' },
   ranking_list: { name: '排名列表', width: 300, height: 400, category: 'business' },
+  alarm_list: { name: '告警列表', width: 300, height: 400, category: 'business' },
   progress_bar: { name: '进度条', width: 300, height: 40, category: 'business' },
   table_view: { name: '表格', width: 500, height: 300, category: 'business' },
   border_decoration: { name: '边框装饰', width: 400, height: 300, category: 'decoration' },
@@ -193,6 +240,24 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   ],
   topNavActive: 'components',
   topNavDropdownOpen: false,
+
+  // Image Workflow
+  imageUpload: null,
+  imageMode: 'agent',
+  imageWorkflowStep: 'idle',
+  imageSupplementaryText: '',
+  imageAnalysis: null,
+  imageSemantic: null,
+  imageRetrieval: null,
+  imageBranch: '',
+  imageSelectedTemplateId: '',
+
+  // Asset Workflow
+  assetSchemes: [],
+  assetSelectedSchemes: [],
+  assetLayers: [],
+  assetWorkflowStep: 'idle',
+  previewComponents: [],
 
   // Actions
   addComponent: (type, position, name, size) => {
@@ -420,4 +485,51 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => ({ topNavDropdownOpen: !state.topNavDropdownOpen })),
 
   closeTopNavDropdown: () => set({ topNavDropdownOpen: false }),
+
+  // ─── Image Workflow actions ───
+  setImageUpload: (data) => set((state) => ({
+    imageUpload: data === null ? null : { ...(state.imageUpload || {}), ...data } as typeof state.imageUpload,
+  })),
+  setImageMode: (mode) => set({ imageMode: mode }),
+  setImageWorkflowStep: (step) => set({ imageWorkflowStep: step }),
+  setImageSupplementaryText: (text) => set({ imageSupplementaryText: text }),
+  setImageAnalysis: (analysis) => set({ imageAnalysis: analysis }),
+  setImageSemantic: (semantic) => set({ imageSemantic: semantic }),
+  setImageRetrieval: (retrieval) => set({ imageRetrieval: retrieval }),
+  setImageBranch: (branch) => set({ imageBranch: branch }),
+  setImageSelectedTemplateId: (id) => set({ imageSelectedTemplateId: id }),
+  resetImageUpload: () => set({
+    imageUpload: null,
+    imageMode: 'agent',
+    imageWorkflowStep: 'idle',
+    imageSupplementaryText: '',
+    imageAnalysis: null,
+    imageSemantic: null,
+    imageRetrieval: null,
+    imageBranch: '',
+    imageSelectedTemplateId: '',
+  }),
+  resetImageWorkflow: () => set({
+    imageWorkflowStep: 'idle',
+    imageAnalysis: null,
+    imageSemantic: null,
+    imageRetrieval: null,
+    imageBranch: '',
+    imageSelectedTemplateId: '',
+  }),
+
+  // ─── Asset Workflow actions ───
+  setAssetSchemes: (schemes) => set({ assetSchemes: schemes }),
+  setAssetSelectedSchemes: (indices) => set({ assetSelectedSchemes: indices }),
+  addAssetLayer: (layer) => set((state) => ({ assetLayers: [...state.assetLayers, layer] })),
+  clearAssetLayers: () => set({ assetLayers: [] }),
+  setAssetWorkflowStep: (step) => set({ assetWorkflowStep: step }),
+  resetAssetWorkflow: () => set({
+    assetSchemes: [],
+    assetSelectedSchemes: [],
+    assetLayers: [],
+    assetWorkflowStep: 'idle',
+  }),
+  setPreviewComponents: (components) => set({ previewComponents: components }),
+  clearPreviewComponents: () => set({ previewComponents: [] }),
 }));

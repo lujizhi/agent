@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { analyzeImage, parseSemantics, detectIndustryFromFileName } from '@/lib/image-analysis';
 import { retrieveResources } from '@/lib/vector-retrieval';
+import type { SemanticLayoutItem, TemplateMatch } from '@/types/editor';
 
 /**
  * POST /api/image-analyze
@@ -61,14 +62,14 @@ export async function POST(request: NextRequest) {
         industry: semantic.json.industry,
         style: semantic.json.style,
         colors: semantic.json.color,
-        layout: semantic.json.layout.map((a) => ({
+        layout: semantic.json.layout.map((a: SemanticLayoutItem) => ({
           区域: a.area === 'top' ? '顶部标题栏' : a.area === 'left' ? '左侧看板' : a.area === 'right' ? '右侧看板' : a.area === 'center' ? '中央展示区' : '底部栏',
           宽度: a.w,
           高度: a.h,
           组件: a.component,
         })),
         materials: semantic.json.material_tags,
-        matchedTemplates: retrieval.templates.map((t) => ({
+        matchedTemplates: retrieval.templates.map((t: TemplateMatch) => ({
           name: t.name,
           matchScore: t.matchScore,
           reason: t.reason,

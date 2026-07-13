@@ -17,8 +17,10 @@ import type {
   ImageAnalysisResult,
   SegmentedLayer,
   PageStructure,
+  PageArea,
   ColorPalette,
   SemanticJSON,
+  SemanticLayoutItem,
   SemanticAnalysisResult,
 } from '@/types/editor';
 
@@ -407,7 +409,7 @@ export function parseSemantics(
     industry: preset.industry,
     style: preset.style,
     color: [preset.colors[0], preset.colors[1], preset.colors[2]],
-    layout: analysis.structureCondition.areas.map((area) => ({
+    layout: analysis.structureCondition.areas.map((area: PageArea) => ({
       area: area.area,
       w: area.w,
       h: area.h,
@@ -420,7 +422,7 @@ export function parseSemantics(
   if (supplementaryText) {
     if (supplementaryText.includes('新增') || supplementaryText.includes('增加')) {
       // 在适当区域添加组件
-      const rightArea = semanticJSON.layout.find((a) => a.area === 'right');
+      const rightArea = semanticJSON.layout.find((a: SemanticLayoutItem) => a.area === 'right');
       if (rightArea && !rightArea.component.includes('numCard')) {
         rightArea.component.push('numCard');
       }
@@ -430,7 +432,7 @@ export function parseSemantics(
   return {
     json: semanticJSON,
     businessScene: preset.scene,
-    layoutDescription: `${preset.layoutType === 'left_right' ? '标准左右双侧看板布局' : '居中核心布局'}，${analysis.structureCondition.areas.map((a) => a.label).join('、')}`,
+    layoutDescription: `${preset.layoutType === 'left_right' ? '标准左右双侧看板布局' : '居中核心布局'}，${analysis.structureCondition.areas.map((a: PageArea) => a.label).join('、')}`,
     nativeComponents: preset.components.map((c) => {
       const map: Record<string, string> = {
         lineChart: '趋势折线图',
